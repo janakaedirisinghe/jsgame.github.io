@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>js_Game</title>
+    <style>
+    	body{background-color: #d8d8d8;};
+    	* { padding: 0; margin: ; }
+    	canvas { background: #ffffff; display: block; margin: 0 auto;margin-top: 100px; }
+		.button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 25px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    align-self: center;
+}
+.button:hover {
+    background-color: green;
+}    
+
+
+</style>
+</head>
+<body>
+	<h2 align="center">JavaScript Game</h2>
+	<button class="button" align="center" onclick="myFunction()"> play!</button>
+	<!--<button onclick="myFunction1()">Try it</button>-->
+	<p id="demo"></p>
+	
+
+
+<canvas id="myCanvas" width="550" height="360" style="border:1px solid #000000";></canvas>
+
+
+
+<script>
+
+	/*function myFunction1() {
+    var x = document.getElementById("myCanvas");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+	}*/
+
+	function myFunction() 
+	{
+    var txt;
+    var person = prompt("Please enter your name:", "Your name here");
+    if (person == null || person == "") {
+        txt = "Please enter your name";
+    } else {
+        txt = "Hello " + person + "! Good Luck !";
+    }
+    document.getElementById("demo").innerHTML = txt;
+	}
+
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+var ballRadius = 10;
+var x = canvas.width/2;
+var y = canvas.height-30;
+var dx = 2;
+var dy = -2;
+var paddleHeight = 10;
+var paddleWidth = 100;
+var paddleX = (canvas.width-paddleWidth)/2;
+var rightPressed = false;
+var leftPressed = false;
+var brickRowCount = 6;
+var brickColumnCount = 3;
+var brickWidth = 75;
+var brickHeight = 20;
+var brickPadding = 10;
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+var score = 0;
+var lives = 3;
+
+
+
+
+var bricks = [];
+for(var c=0; c<brickColumnCount; c++) {
+  bricks[c] = [];
+  for(var r=0; r<brickRowCount; r++) {
+    bricks[c][r] = { x: 0, y: 0, status: 1 };
+  }
+}
+
+
+
+//alert("use left arrow key and right arrow key to move paddle left and right");
+
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler(e) {
+  if(e.keyCode == 39) {
+    rightPressed = true;
+  }
+  else if(e.keyCode == 37) {
+    leftPressed = true;
+  }
+}
+function keyUpHandler(e) {
+  if(e.keyCode == 39) {
+    rightPressed = false;
+  }
+  else if(e.keyCode == 37) {
+    leftPressed = false;
+  }
+}
+function collisionDetection() 
+{
+  for(var c=0; c<brickColumnCount; c++) 
+  {
+    for(var r=0; r<brickRowCount; r++) 
+    {
+      var b = bricks[c][r];
+      if(b.status == 1) 
+      	{
+        	if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) 
+        	{
+	          dy = -dy;
+	          b.status = 0;
+	          score++;
+	          if(score == brickRowCount*brickColumnCount) {
+                        alert("YOU WIN_CONGRATULATIONS!");
+                        document.location.reload();
+                    }
+
+
+        	}
+      	}
+    }
+  }
+}
+
+
+function drawScore() 
+{
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#403947";
+    ctx.fillText("Score: "+score, 15, 20);
+}
+
+function drawLives() 
+{
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#403947";
+    ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+}
+
+
+function drawBall() 
+{
+  ctx.beginPath();
+  ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+  ctx.fillStyle = "#b176ed";
+  ctx.strokeStyle = "#000000";
+
+  ctx.stroke();
+  ctx.fill();
+  ctx.closePath();
+}
+function drawPaddle() {
+  ctx.beginPath();
+  ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+  ctx.fillStyle = "#b176ed";
+  ctx.strokeStyle = "#ffffff";
+  ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
+}
+function drawBricks() {
+  for(var c=0; c<brickColumnCount; c++) {
+    for(var r=0; r<brickRowCount; r++) {
+      if(bricks[c][r].status == 1) {
+        var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+        var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+        bricks[c][r].x = brickX;
+        bricks[c][r].y = brickY;
+        ctx.beginPath();
+        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+        ctx.fillStyle = "#b176ed";
+        ctx.fillStyle = "#b176ed";
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+      }
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBricks();
+  drawBall();
+  drawPaddle();
+  collisionDetection();
+  drawScore();
+  drawLives();
+
+  if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+    dx = -dx;
+  }
+  if(y + dy < ballRadius) {
+    dy = -dy;
+  }
+  else if(y + dy > canvas.height-ballRadius) 
+  	{
+    if(x > paddleX && x < paddleX + paddleWidth) 
+    {
+      dy = -dy;
+    }
+    else {
+
+      lives--;
+      if(!lives) {
+        alert("GAME_OVER");
+        document.location.reload();
+      }
+      else {
+        x = canvas.width/2;
+        y = canvas.height-30;
+        dx = 3;
+        dy = -3;
+        paddleX = (canvas.width-paddleWidth)/2;
+      }
+    }
+  }
+  if(rightPressed && paddleX < canvas.width-paddleWidth) {
+    paddleX += 7;
+  }
+  else if(leftPressed && paddleX > 0) {
+    paddleX -= 7;
+  }
+
+  x += dx;
+  y += dy;
+  requestAnimationFrame(draw);
+}
+
+draw();
+
+
+
+
+
+
+
+
+
+
+</script>
+<br>
+
+<div class="col-sm-8"><code>© Copyright 2018  JP EDIRISINGHE (SE/2016/007)  - All Rights Reserved</code></div>
+</body>
+</html>
